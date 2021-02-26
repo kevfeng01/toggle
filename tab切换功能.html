@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .info{
+        border: 1px solid black;
+        font-size: 20px;
+        position: absolute;
+        left:20px;
+        top:20px;
+      }
+      #outer {
+        width: 970px;
+        height: 500px;
+        border: 1px solid black;
+        margin: 200px auto;
+        position: relative;
+        /* left:200px; */
+      }
+      #nav {
+        height: 50px;
+        width: 920px;
+        display: inline-block;
+        /* border: 1px solid black; */
+      }
+      #nav li {
+        height: 50px;
+        width: 150px;
+        max-width: 150px;
+        border-width: 0 1px 1px 0;
+        border-color: black;
+        border-style: solid;
+        float: left;
+        list-style: none;
+        text-align: center;
+        line-height: 50px;
+        position: relative;
+        overflow: hidden;
+        font-size: 30px;
+      }
+      #nav li:hover {
+        cursor: default;
+      }
+      #nav li span {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 15px;
+        height: 15px;
+        /* border: 1px solid black;
+        border-width: 0 0 1px 1px; */
+        border-radius: 50%;
+        font-size: 12px;
+        display: inline-block;
+        text-align: center;
+        line-height: 15px;
+      }
+      #nav li span:hover {
+        background-color: rgb(175, 174, 174);
+      }
+      #nav li input {
+        width: 80px;
+        height: 40px;
+        position: absolute;
+        top: 5px;
+        left: 30px;
+        font-size: 32px;
+      }
+      section {
+        width: 970px;
+        height: 450px;
+        position: absolute;
+        display: none;
+        font-size: 30px;
+      }
+      section textarea {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        width: 700px;
+        height: 380px;
+        font-size: 32px;
+      }
+      .conactive {
+        display: block;
+      }
+      .liactive {
+        border-width: 0 1px 0 0 !important;
+      }
+      .add {
+        width: 25px;
+        height: 25px;
+        border: 1px solid black;
+        top: 12px;
+        right: 12px;
+        display: inline-block;
+        position: absolute;
+        line-height: 25px;
+        text-align: center;
+      }
+      .add:hover {
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="info">
+      <p style="font-size: 25px;font-weight: 300;">说明：</p><br>
+      <p>1.点击+按钮可以添加标签与内容</p><br>
+      <p>2.点击标签右上方X按钮可以删除<br>该标签及对应内容</p><br>
+      <p>3.单击标签栏可以切换查看不同标<br>签栏对应的内容</p><br>
+      <p>4.双击标签栏或内容栏可以修改对<br>应标签及内容</p><br>
+      <p>5.标签过多时自动调整标签宽度</p><br>
+    </div>
+    <div id="outer">
+      <div>
+        <ul id="nav">
+          <li class="liactive">tab1 <span>X</span></li>
+          <li>tab2<span>X</span></li>
+          <li>tab3<span>X</span></li>
+        </ul>
+        <div class="add">+</div>
+      </div>
+      <ul id="sec">
+        <section class="conactive">tab1</section>
+        <section>tab2</section>
+        <section>tab3</section>
+      </ul>
+    </div>
+  </body>
+  <script>
+    var that;
+    class Tab {
+      constructor(id) {
+        that = this;
+        this.main = document.querySelector(id);
+        this.lis = this.main.getElementsByTagName("li");
+        this.sections = this.main.getElementsByTagName("section");
+        this.add = this.main.querySelector(".add");
+        this.ul1 = this.main.querySelector("#nav");
+        this.ul2 = this.main.querySelector("#sec");
+        this.spans = this.main.getElementsByTagName("span");
+        this.init();
+      }
+      init() {
+        this.toggleTab();
+        this.addTab();
+        this.removeTab();
+        this.editTab();
+      }
+
+      editTab() {
+
+        //给标签栏添加双击弹出输入文本框事件
+        for (let i = 0; i < this.lis.length; i++) {
+          this.lis[i].ondblclick = function () {
+            let input = document.createElement("input");
+            that.lis[i].appendChild(input);
+            input.focus();
+            let width1 = parseInt(getComputedStyle(input).width);
+            let width2 = parseInt(getComputedStyle(that.lis[0]).width);
+            input.setAttribute(
+              "style",
+              `left:${width2 - width1 > 0 ? (width2 - width1) / 2 : 1}px`
+            );
+
+            input.onblur = function () {
+              input.style.visibility = "hidden";
+              if (input.value != "") {
+                that.lis[i].childNodes[0].nodeValue = input.value;
+              }
+            };
+
+            input.onclick = function (e) {
+              e.stopPropagation();
+              input.focus();
+            };
+
+            input.onkeyup = function (e) {
+              if (e.keyCode === 13) {
+                input.style.visibility = "hidden";
+                if (input.value != "") {
+                  that.lis[i].childNodes[0].nodeValue = input.value;
+                }
+              }
+            };
+          };
+
+          //给内容栏添加双击弹出输入文本框事件
+          this.sections[i].ondblclick = function () {
+            let input = document.createElement("textarea");
+            that.sections[i].appendChild(input);
+            input.focus();
+
+            input.onblur = function () {
+              input.style.visibility = "hidden";
+              if (input.value != "") {
+                that.sections[i].innerHTML = input.value;
+              }
+            };
+
+            input.onclick = function (e) {
+              e.stopPropagation();
+              input.focus();
+            };
+
+            input.onkeyup = function (e) {
+              if (e.keyCode === 13) {
+                input.style.visibility = "hidden";
+                if (input.value != "") {
+                  that.sections[i].innerHTML = input.value;
+                }
+              }
+            };
+          };
+        }
+      }
+
+      addTab() {
+        //给添加标签按钮添加单击添加标签事件
+        this.add.onclick = function () {
+          //清楚双击选中文本
+          window.getSelection
+            ? window.getSelection().removeAllRanges()
+            : document.selection.empty();
+
+          // 创建li并添加到导航栏
+          let li = document.createElement("li");
+          li.innerHTML = "Tab";
+          that.ul1.appendChild(li);
+
+          // 创建section并添加到内容
+          let section = document.createElement("section");
+          section.innerHTML = `tab ${Math.random()}`;
+          that.ul2.appendChild(section);
+
+          //创建删除按钮
+          let span = document.createElement("span");
+          span.innerHTML = "X";
+          li.appendChild(span);
+
+          // console.log(that.spans.length);
+
+          //使新的Tab具有切换能力
+          that.toggleTab();
+
+          //显示当前Tab
+          that.clearClass();
+          that.ul1.lastChild.classList.add("liactive");
+          that.ul2.lastChild.classList.add("conactive");
+
+          //压缩导航栏标签宽度
+          let len0 = parseInt(getComputedStyle(that.lis[0]).width);
+          let len1 = parseInt(getComputedStyle(that.ul1).width);
+          let len2 = that.lis.length;
+          if (len1 - len2 * (len0 + 2) > len0 + 2) {
+            for (let i = 0; i < len2; i++) {
+              that.lis[i].setAttribute("style", `width:${len0}px`);
+            }
+          } else {
+            for (let i = 0; i < len2; i++) {
+              that.lis[i].setAttribute(
+                "style",
+                `width:${(len1 - len2 * 2) / len2}px`
+                
+              );
+            }
+          }
+          
+          
+          that.removeTab();
+          that.editTab();
+        };
+      }
+
+      clearClass() {
+        for (let i = 0; i < that.lis.length; i++) {
+          that.lis[i].className = "";
+        }
+
+        for (let i = 0; i < that.sections.length; i++) {
+          that.sections[i].className = "";
+        }
+      }
+
+      removeReset() {
+        for (let i = 0; i < that.spans.length; i++) {
+          this.spans[i].onclick = function (e) {
+            e.stopPropagation();
+            that.ul1.removeChild(that.spans[i].parentNode);
+            that.ul2.removeChild(that.sections[i]);
+
+            
+            that.removeReset();
+          };
+        }
+
+        //调整标签栏宽度
+            let len0 = parseInt(getComputedStyle(that.lis[0]).width);
+            let len1 = parseInt(getComputedStyle(that.ul1).width);
+            let len2 = that.lis.length;
+            for (let i = 0; i < len2; i++) {
+              that.lis[i].setAttribute(
+                "style",
+                `width:${(len1 - 10 - len2 * 2) / len2}px`
+              );
+            }
+
+        that.editTab();
+        that.toggleTab();
+      }
+
+      removeTab() {
+        for (let i = 0; i < that.spans.length; i++) {
+          this.spans[i].onclick = function (e) {
+            e.stopPropagation();
+            that.ul1.removeChild(that.spans[i].parentNode);
+            that.ul2.removeChild(that.sections[i]);
+
+            //清楚双击选中文本
+            window.getSelection
+              ? window.getSelection().removeAllRanges()
+              : document.selection.empty();
+            that.removeReset();
+          };
+        }
+      }
+
+      toggleTab() {
+        for (let i = 0; i < this.lis.length; i++) {
+          this.lis[i].onclick = function () {
+
+            //清楚双击选中文本
+            window.getSelection
+              ? window.getSelection().removeAllRanges()
+              : document.selection.empty();
+
+            that.clearClass();
+
+            //清除所有导航栏所有样式，给当前选中的tab加样式
+            that.lis[i].classList.add("liactive");
+
+            //让所有section消失，当前选中的这个显现
+            that.sections[i].classList.add("conactive");
+          };
+        }
+      }
+    }
+    new Tab("#outer");
+  </script>
+</html>
